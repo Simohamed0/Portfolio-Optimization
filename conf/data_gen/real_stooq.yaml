@@ -1,0 +1,45 @@
+# conf/data_gen/real_stooq.yaml
+
+# This part will be used to call load_and_process_real_stock_data
+# Note: _target_ is NOT specified here directly for the top-level data_gen.
+# Instead, main.py will inspect cfg.data_gen to decide which functions to call.
+# OR, more cleanly, we can make the _target_ of data_gen a wrapper function/class.
+# For now, let's use a conditional approach in main.py.
+
+# Type of data source (for main.py to switch logic)
+source_type: "real_stooq"
+
+# Parameters for data_loader.real_data.load_and_process_real_stock_data
+load_params:
+  tickers: [ # List the tickers for which you have CSVs and want to use
+    "AAPL", "MSFT", "GOOGL", "AMZN", "META", "JPM", "XOM", "META", "V", "UNH"
+  ]
+  data_dir: "data" # Relative path to project root where your CSVs are
+  price_column: "Close" # Column in CSV to use (Stooq 'Close' is often adjusted)
+  start_date_str: "2014-01-03" # Optional: Filter data from this date
+  end_date_str: "2024-12-31"   # Optional: Filter data up to this date
+
+# Parameters for data_loader.real_data.calculate_covariance_from_real_returns
+# This sigma will be calculated on a specified period of the loaded returns
+sigma_calc_params:
+  # To define the period for Sigma calculation from the loaded real returns:
+  # Option 1: Use a fixed number of initial days/years from the loaded data.
+  # use_initial_n_days_for_sigma: 756 # approx 3 years (252*3)
+  # Option 2: Use specific start/end dates for the sigma calculation period
+  # (These dates must be within the overall loaded data range)
+  sigma_period_start_date: "2014-01-03"
+  sigma_period_end_date: "2024-12-31" # Example: Use 2018-2020 for Sigma
+  annualization_factor: 252
+
+# Parameters for data_loader.real_data.create_features_and_targets_from_real_data
+# These features/targets will be created from a potentially different period
+# of the loaded returns (e.g., after the Sigma calculation period).
+feature_target_params:
+  # Define the period for generating X_train, Y_train
+  train_period_start_date: "2014-01-03"
+  train_period_end_date: "2024-12-31"
+  n_lags: 20
+  pred_horizon: 1
+
+# n_assets will be derived from the length of successfully loaded tickers.
+# input_dim will be n_assets * feature_target_params.n_lags

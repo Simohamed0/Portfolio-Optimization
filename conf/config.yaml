@@ -1,0 +1,54 @@
+# conf/config.yaml
+
+# The 'defaults' list is a key feature of Hydra's structured configuration.
+# It specifies which configuration files/groups to load and compose.
+# The order can sometimes matter if there are overrides.
+defaults:
+  # Selects the 'synthetic.yaml' config from the 'data_gen' group.
+  - data_gen: real_stooq
+
+  # Selects the model configuration from the 'model' group.
+  - model: lstm_allocator
+
+  # Selects 'default.yaml' from the 'training' group for training parameters.
+  - training: default
+
+  # Selects 'default.yaml' from the 'evaluation' group for evaluation parameters.
+  - evaluation: default
+
+  # Hydra's internal logging and output directory settings.
+  # These lines include Hydra's default configurations for job logging and its own logging.
+  # This is generally recommended unless you have specific custom logging needs.
+  - override hydra/job_logging: default
+  - override hydra/hydra_logging: default
+
+# --- Top-Level Application Parameters ---
+# These are parameters general to the whole experiment run.
+
+project_name: "EndToEndPortfolioOptimizer"
+seed: 42 # For reproducibility across numpy, torch, etc.
+
+# Device selection: 'cpu' or 'cuda'.
+# This can be easily overridden from the command line: `python main.py device=cuda`
+device: "cpu"
+
+
+# --- Hydra Specific Configuration ---
+# This 'hydra' block configures Hydra's behavior.
+hydra:
+  # Configuration for single runs (when you just do `python main.py`)
+  run:
+    # Defines the output directory structure for each run.
+    # '${now:%Y-%m-%d}/${now:%H-%M-%S}' creates timestamped directories.
+    # All outputs (logs, plots, saved models, .hydra directory) will go here.
+    dir: outputs/${now:%Y-%m-%d}/${now:%H-%M-%S}
+
+  # Configuration for multi-runs (e.g., `python main.py -m data_gen.n_assets=5,10`)
+  # This is more advanced Hydra usage for hyperparameter sweeps.
+  sweep:
+    dir: multirun/${now:%Y-%m-%d_%H-%M-%S}
+    # Creates a subdirectory for each job in a multi-run sweep.
+    subdir: ${hydra.job.num} # job.num is the job ID in the sweep
+
+  # You can also configure Hydra's logging further here if defaults are not sufficient,
+  # but usually overriding job_logging and hydra_logging as done in 'defaults' is enough.

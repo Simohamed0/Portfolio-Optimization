@@ -1,0 +1,25 @@
+# conf/data_gen/synthetic.yaml
+
+# The '_target_' key tells Hydra which Python callable (function or class constructor)
+# this configuration block is intended for. When hydra.utils.instantiate(cfg.data_gen)
+# is called in main.py, Hydra will call this target with the below keys as arguments.
+_target_: data_loader.synthetic_data.generate_synthetic_market_data
+
+# Parameters for the generate_synthetic_market_data function:
+n_samples: 2500        # Total number of time steps for asset returns
+n_assets: 5            # Number of assets
+n_factors: 2           # Number of underlying latent factors
+factor_ar_rho: 0.7     # Autoregressive coefficient for factors
+factor_vol: 0.015      # Volatility of factor innovations (daily)
+idiosyncratic_vol: 0.02 # Volatility of asset-specific noise (daily)
+avg_beta: 0.8          # Average exposure of assets to factors
+
+# Parameters for the create_features_and_targets_from_synthetic function
+# These are part of the "data generation" process in a broader sense.
+# main.py will access these as cfg.data_gen.n_lags, etc.
+n_lags: 10             # Number of past return days for features
+pred_horizon: 1        # Prediction horizon for target returns (e.g., 1 day ahead)
+
+# Note: 'input_dim' for the neural network will be derived in main.py as n_assets * n_lags
+# It's generally better to derive dependent parameters in code rather than trying complex
+# interpolations within YAML, though Hydra does support some interpolation.

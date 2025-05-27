@@ -1,0 +1,19 @@
+# conf/model/softmax_allocator.yaml
+
+# Target class for the main portfolio allocation model
+_target_: models.softmax_allocator.SoftmaxPortfolioAllocator
+
+# Parameters that will be passed to SoftmaxPortfolioAllocator constructor.
+# 'input_dim' and 'n_assets' will be passed dynamically from main.py
+# based on the data_gen configuration.
+
+# Nested configuration for the 'weight_predictor_params' argument
+# of SoftmaxPortfolioAllocator. This allows configuring WeightPredictorNet.
+weight_predictor_params:
+  # _target_: models.softmax_allocator.WeightPredictorNet # Not strictly needed if passing dict
+  hidden_dims: [128, 64] # Example: list of hidden layer dimensions
+  dropout_rate: 0.3
+
+# If you had other parameters for SoftmaxPortfolioAllocator itself, they'd go here.
+# For example, if it took a temperature for the softmax:
+# softmax_temperature: 1.0

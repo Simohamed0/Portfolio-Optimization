@@ -1,0 +1,3 @@
+test_split_ratio: 0.2       # Proportion of data to use for out-of-sample testing (e.g., last 20%)
+risk_free_rate_annual: 0.01 # Annual risk-free rate for Sharpe ratio calculation
+annualization_factor: 252   # Number of trading periods in a year (e.g., 252 for daily data)

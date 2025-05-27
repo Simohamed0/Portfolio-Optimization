@@ -1,0 +1,13 @@
+# conf/model/markowitz_allocator.yaml
+
+_target_: models.markowitz_allocator.MarkowitzPortfolioOptimizer
+
+# Parameters for MarkowitzPortfolioOptimizer constructor:
+# 'input_dim', 'n_assets', and 'sigma_np_for_opt' will be passed from main.py
+gamma_risk_aversion: 2.0 # This is now a direct model hyperparameter
+
+# Nested configuration for the 'mu_predictor_params' argument
+mu_predictor_params:
+  # _target_: models.mu_predictor.MuPredictionNet # Not strictly needed if just passing dict
+  hidden_dims: [128, 64]
+  dropout_rate: 0.3

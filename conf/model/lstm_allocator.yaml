@@ -1,0 +1,14 @@
+# conf/model/lstm_allocator.yaml
+
+_target_: models.lstm_allocator.SoftmaxPortfolioAllocatorLSTM
+
+# n_assets and n_lags will be passed from main.py based on data_gen config
+
+# Parameters for the nested LSTMPredictorNet are passed via 'lstm_predictor_params'
+lstm_predictor_params:
+  # _target_: models.lstm_allocator.LSTMPredictorNet # Not strictly needed if passing dict
+  lstm_hidden_size: 64
+  num_lstm_layers: 2
+  lstm_dropout: 0.1 # Only applies if num_lstm_layers > 1
+  fc_hidden_dims: [32] # FC layers after LSTM output
+  fc_dropout_rate: 0.25
