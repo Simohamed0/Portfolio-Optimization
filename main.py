@@ -29,6 +29,11 @@ try:
         plot_portfolio_weights,
         plot_covariance_matrix,
     )
+    from utils.losses import ( 
+        negative_mean_return_loss,
+        sharpe_ratio_loss,
+        mean_variance_loss
+    )
     from utils.evaluation import evaluate_portfolio_performance  # ADDED IMPORT
 except ImportError as e:
     print("Error importing project modules. Check paths and __init__.py files.")
@@ -38,39 +43,6 @@ except ImportError as e:
     raise
 
 
-# --- Portfolio Objective Loss Function (Unchanged) ---
-def portfolio_objective_loss(
-    predicted_weights: torch.Tensor, actual_future_returns: torch.Tensor
-) -> torch.Tensor:
-    # (Implementation as before - looks good)
-    if predicted_weights is None or predicted_weights.nelement() == 0:
-        log.warning(
-            "Predicted weights are None or empty in loss function. Returning zero loss."
-        )
-        return torch.tensor(
-            0.0, requires_grad=True, device=actual_future_returns.device
-        )
-    if torch.isnan(predicted_weights).any() or torch.isinf(predicted_weights).any():
-        log.warning(
-            "NaN/Inf in predicted_weights to portfolio_loss. Returning high penalty loss."
-        )
-        return torch.tensor(float("inf"), device=actual_future_returns.device)
-    portfolio_returns_batch = torch.sum(
-        predicted_weights * actual_future_returns, dim=1
-    )
-    if (
-        torch.isnan(portfolio_returns_batch).any()
-        or torch.isinf(portfolio_returns_batch).any()
-    ):
-        log.warning(
-            "NaN/Inf in portfolio_returns_batch during loss calculation. Returning high penalty loss."
-        )
-        return torch.tensor(float("inf"), device=actual_future_returns.device)
-    loss_val = -torch.mean(portfolio_returns_batch)
-    if torch.isnan(loss_val) or torch.isinf(loss_val):
-        log.warning("Loss became NaN/Inf. Returning large finite penalty value.")
-        return torch.tensor(1e5, device=actual_future_returns.device)
-    return loss_val
 
 
 @hydra.main(config_path="conf", config_name="config", version_base="1.3")
@@ -297,6 +269,15 @@ def run_experiment(cfg: DictConfig) -> None:
     log.info("\n--- Stage 3: Training ---")
     train_losses = []
     n_samples_train = X_train_tensor.shape[0]
+
+    # set up the loss function based on the config
+    if cfg.training.loss.name == "negative_mean_return":
+        portfolio_objective_loss = negative_mean_return_loss
+    elif cfg.training.loss.name == "sharpe_ratio":
+        portfolio_objective_loss = sharpe_ratio_loss
+    elif cfg.training.loss.name == "mean_variance":
+        portfolio_objective_loss = mean_variance_loss
+
     if n_samples_train == 0:
         log.error("No training samples available after split. Exiting.")
         raise SystemExit
@@ -414,15 +395,6 @@ def run_experiment(cfg: DictConfig) -> None:
                         os.path.join(output_dir, "average_allocation_test.csv"),
                         index=False,
                     )
-                    # plot the average allocation
-                    plot_portfolio_weights(
-                        avg_alloc_series.values,
-                        labels=avg_alloc_series.index.tolist(),
-                        title="Average Portfolio Allocation (Test Set)",
-                        save_path=os.path.join(
-                            output_dir, "average_allocation_test.png"
-                        ),
-                    )
                     # Remove from main df to avoid issues with to_json for mixed types
                     del eval_metrics_df.loc["average_allocation"]
 
@@ -465,7 +437,7 @@ def run_experiment(cfg: DictConfig) -> None:
     with open(final_config_path, "w") as f:
         OmegaConf.save(config=cfg, f=f)
     log.info(f"Final resolved configuration saved to {final_config_path}")
-    log.info(f"All results saved to directory: {output_dir}"m )
+    log.info(f"All results saved to directory: {output_dir}")
 
 
 if __name__ == "__main__":

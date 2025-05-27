@@ -5,5 +5,5 @@ batch_size: 64      # Batch size for training
 learning_rate: 3.0e-4 # Initial learning rate for the Adam optimizer
 clip_grad_norm: 1.0   # Max norm for gradient clipping (set to null or 0 to disable)
 
-# If you were using the Markowitz model, you might have:
-# gamma_risk_aversion: 2.0
+loss:
+  name: "negative_mean_return" # all options: "sharpe_ratio", ( this one not yet supported "mean_variance" ), 'negative_mean_return'

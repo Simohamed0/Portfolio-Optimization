@@ -8,7 +8,7 @@ defaults:
   - data_gen: real_stooq
 
   # Selects the model configuration from the 'model' group.
-  - model: lstm_allocator
+  - model: softmax_allocator
 
   # Selects 'default.yaml' from the 'training' group for training parameters.
   - training: default
